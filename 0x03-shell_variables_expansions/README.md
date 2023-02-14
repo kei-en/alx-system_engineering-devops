@@ -10,3 +10,4 @@ Contains:
 8-true-knowledge - prints the result of addition between 128 and env. variable called TRUEKNOWLEDGE
 9-divide_and_rule - prints the result of POWER divided by DIVIDE
 10-love_exponent_breath - displays the result of BREATH to the power of LOVE
+11-binary_to_decimal - converts a number from base 2 to base 10

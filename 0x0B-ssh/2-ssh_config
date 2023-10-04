@@ -2,6 +2,6 @@
 
 Host 244402-web-01
 User ubuntu
-HostName 100.26.209.116
+HostName 174.129.55.107
 IdentityFile ~/.ssh/school
 PasswordAuthentication no

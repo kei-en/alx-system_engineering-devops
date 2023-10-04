@@ -1,22 +1,41 @@
 #!/usr/bin/env bash
-# Install and configure HAproxy on lb-01 server.
+# Installs, configures, and starts the load balancer
+sudo apt-get update
+sudo apt-get -y install --no-install-recommends software-properties-common
+sudo add-apt-repository -y ppa:vbernat/haproxy-2.4
+sudo apt-get -y install haproxy
 
-sudo apt install --no-install-recommends software-properties-common
-sudo add-apt-repository ppa:vbernat/haproxy-2.4 -y
-sudo apt update
-sudo apt install haproxy=2.4.\*
+echo "ENABLED=1" >> /etc/default/haproxy
+mv /etc/haproxy/haproxy.cfg{,.original}
+touch /etc/haproxy/haproxy.cfg
 
-load_balancer="\nfrontend http\n
-\tbind *:80
-\tmode http
-\tdefault_backend load_b
+printf %s "global
+    log 127.0.0.1 local0 notice
+    maxconn 2000
+    user haproxy
+    group haproxy
 
-backend load_b\n
-\tbalance roundrobin
-\tserver web-01 18.206.232.128 check
-\tserver web-02 100.25.162.95 check
-"
-echo -e "ENABLED=1\n" | sudo tee -a /etc/default/haproxy
-echo -e "$load_balancer" | sudo tee -a /etc/haproxy/haproxy.cfg
+defaults
+    log     global
+    mode    http
+    option  httplog
+    option  dontlognull
+    retries 3
+    option redispatch
+    timeout connect  5000
+    timeout client  10000
+    timeout server  10000
 
-service haproxy restart
+listen hbnb
+    bind 0.0.0.0:80
+    mode http
+    stats enable
+    stats uri /haproxy?stats
+    balance roundrobin
+    option httpclose
+    option forwardfor
+    server 24402-web-01 18.206.232.128:80 check
+    server 24402-web-02 100.25.162.95:80 check
+" >> /etc/haproxy/haproxy.cfg
+
+service haproxy start

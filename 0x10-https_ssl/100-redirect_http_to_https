@@ -1,0 +1,45 @@
+global
+    log 127.0.0.1 local0 notice
+    maxconn 2000
+    user haproxy
+    group haproxy
+
+defaults
+    log     global
+    mode    http
+    option  httplog
+    option  dontlognull
+    retries 3
+    option redispatch
+    timeout connect  5000
+    timeout client  10000
+    timeout server  10000
+
+listen hbnb
+    bind 0.0.0.0:80
+    mode http
+    stats enable
+    stats uri /haproxy?stats
+    balance roundrobin
+    option httpclose
+    option forwardfor
+    server 24402-web-01 18.206.232.128:80 check
+    server 24402-web-02 100.25.162.95:80 check
+
+frontend http
+
+        bind 0.0.0.0:80
+        http-request set-header X-Forwarded-Proto http
+        default_backend www-backend
+
+frontend www-https
+        bind 0.0.0.0:443 ssl crt /etc/letsencrypt/live/www.keien.tech/www.keien.tech.pem
+        http-request set-header X-Forwarded-Proto https
+        default_backend www-backend
+
+backend www-backend
+
+        balance roundrobin
+        redirect scheme https code 301 if !{ ssl_fc }
+        server 24402-web-01 18.206.232.128:80 check
+        server 24402-web-02 100.25.162.95:80 check

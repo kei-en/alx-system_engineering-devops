@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+"""Returns in to-do list information for a given employee ID"""
 import requests
 import sys
 
